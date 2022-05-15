@@ -1,35 +1,30 @@
-from cryptography.hazmat.primitives.asymmetric import rsa
+from Cryptodome.PublicKey import RSA
 import json
 import string
 import random
-import os.path
+import paths
 from os import path
 
 
 class Physician:
     def __init__(self, clinic_id):
         self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 16))
-        self.clinic_id = clinic_id
-        self.private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-        )
-        self.public_key = self.private_key.public_key()
-        self.private_key = self.private_key
-        _path = "../Collections/clinics/clinic" + str(self.clinic_id) + ".json"
+        key = RSA.generate(2048)
+        self.private_key = key.export_key().decode('utf-8')
+        self.public_key = key.public_key().export_key().decode('utf-8')
+        _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
         if not path.exists(_path):
             print("ERROR : the clinic does not exist")
             return
-        # clinic_object = None
-        with open(_path) as openfile:
-            clinic_object = json.loads(openfile.read())
-            clinic_object["staff"].append(self.__dict__)
-            print(clinic_object)
-            # openfile.write(json.dumps(clinic_object))
+        clinic_file = open(_path, "r")
+        clinic_object = json.loads(clinic_file.read())
+        clinic_object["staff"].append(self.__dict__)
+        clinic_file = open(_path, "w")
+        json.dump(clinic_object, clinic_file)
 
 
 if __name__ == '__main__':
-    p = Physician('ZBDF1BC8ZGAGRSVE')
-    # print(p.id)
+    p = Physician('QK7DG7X1VIKUOBOW')
+    print(type(p.private_key))
     # print(p.private_key, p.public_key)
 
