@@ -14,6 +14,7 @@ class Patient:
         self.pulse = pulse
         self.oxygen_saturation = oxygen_saturation
         self.glucose = glucose
+        self.visits = []
         _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
         clinic_file = open(_path, "r")
         clinic_object = json.loads(clinic_file.read())

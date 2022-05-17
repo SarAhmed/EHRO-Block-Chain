@@ -2,7 +2,8 @@ from datetime import datetime
 
 
 class Visit:
-    def __init__(self, patient_id, type, prescription, diagnosis, reason_for_visit, pulse, temperature, glucose, blood_pressure):
+    def __init__(self, patient_id, type, prescription, diagnosis, reason_for_visit, pulse, temperature, glucose,
+                 blood_pressure):
         self.patient_id = patient_id
         self.type = type
         self.prescription = prescription
