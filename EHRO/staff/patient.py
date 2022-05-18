@@ -1,7 +1,5 @@
 import string
 import random
-import paths
-import json
 
 
 class Patient:
@@ -15,9 +13,10 @@ class Patient:
         self.oxygen_saturation = oxygen_saturation
         self.glucose = glucose
         self.visits = []
-        _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
-        clinic_file = open(_path, "r")
-        clinic_object = json.loads(clinic_file.read())
-        clinic_object["patients"].append(self.__dict__)
-        clinic_file = open(_path, "w")
-        json.dump(clinic_object, clinic_file)
+        self.clinic_id = clinic_id
+        # _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
+        # clinic_file = open(_path, "r")
+        # clinic_object = json.loads(clinic_file.read())
+        # clinic_object["patients"].append(self.__dict__)
+        # clinic_file = open(_path, "w")
+        # json.dump(clinic_object, clinic_file)

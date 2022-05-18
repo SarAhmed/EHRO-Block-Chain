@@ -1,0 +1,1 @@
+CLINICS_PATH = "../Collections/clinics/"

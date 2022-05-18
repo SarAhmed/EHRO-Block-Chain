@@ -5,27 +5,29 @@ from os import path
 
 from Cryptodome.PublicKey import RSA
 
-import paths
+from clinc import paths
 from patient import Patient
 from visit import Visit
 
 
 class Physician:
-    def __init__(self, clinic_id):
-        self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+    def __init__(self, username, password, clinic_id):
+        self.username = username
+        self.password = password
+        # self.username = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
         key = RSA.generate(2048)
         self.private_key = key.export_key().decode('utf-8')
         self.public_key = key.public_key().export_key().decode('utf-8')
         self.clinic_id = clinic_id
-        _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
-        if not path.exists(_path):
-            print("ERROR : the clinic does not exist")
-            return
-        clinic_file = open(_path, "r")
-        clinic_object = json.loads(clinic_file.read())
-        clinic_object["staff"].append(self.__dict__)
-        clinic_file = open(_path, "w")
-        json.dump(clinic_object, clinic_file)
+        # _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
+        # if not path.exists(_path):
+        #     print("ERROR : the clinic does not exist")
+        #     return
+        # clinic_file = open(_path, "r")
+        # clinic_object = json.loads(clinic_file.read())
+        # clinic_object["staff"].append(self.__dict__)
+        # clinic_file = open(_path, "w")
+        # json.dump(clinic_object, clinic_file)
 
     def create_patient_visit(self):
         patient_id = input("Patient ID: ")
@@ -42,7 +44,7 @@ class Physician:
                       blood_pressure)
 
         # 1. generate AES key on the fly
-        # 2. hash the visit then encrypt the hash using the physician private key
+        # 2. hash the visit then encrypt the hash using the staff private key
         # 3. (digital envelope) encrypt the AES key using the public key of the clinic
         # 4. encrypt the data using the AES key generated
         # 5. send the visit to the clinic
@@ -59,8 +61,6 @@ class Physician:
 
         patient = Patient(name, age, weight, blood_pressure, pulse, oxygen_saturation, glucose, clinic_id)
 
-    def view_patient_records(self):
-        pass
 
 if __name__ == '__main__':
     p = Physician('QK7DG7X1VIKUOBOW')
