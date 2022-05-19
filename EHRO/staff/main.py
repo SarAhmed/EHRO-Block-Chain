@@ -34,8 +34,19 @@ def prepare_request(obj):
     encrypted_data= aes_encryptor.encrypt(obj)
 
     # formuate the object to be sent in the request body
+    payload = {
+        "encrypted_symmetric_key": encrypted_symmetric_key,
+        "signed_data": signed_hashed_data,
+        "encrypted_data" : encrypted_data,
+        "nonce" : nonce
+    }
+    request_body = {
+        "username": config['DYNAMIC']['PHYSICIAN_USERNAME'],
+        "password": config['DYNAMIC']['PHYSICIAN_PASSWORD'],
+        "payload": payload
+    }
 
-    return 1
+    return request_body
 
 
 def create_physician():
