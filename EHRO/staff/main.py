@@ -33,6 +33,10 @@ def prepare_request(obj):
     nonce = aes_encryptor.nonce
     encrypted_data= aes_encryptor.encrypt(obj)
 
+    username = config['DYNAMIC']['PHYSICIAN_USERNAME']
+    password = config['DYNAMIC']['PHYSICIAN_PASSWORD']
+    encrypted_username = encryptor.encrypt(bytes(username,'utf-8'))
+    encrypted_password =  encryptor.encrypt(bytes(password,'utf-8'))
     # formuate the object to be sent in the request body
     payload = {
         "encrypted_symmetric_key": encrypted_symmetric_key,
@@ -41,8 +45,8 @@ def prepare_request(obj):
         "nonce" : nonce
     }
     request_body = {
-        "username": config['DYNAMIC']['PHYSICIAN_USERNAME'],
-        "password": config['DYNAMIC']['PHYSICIAN_PASSWORD'],
+        "encrypted_username": encrypted_username,
+        "encrypted_password": encrypted_password,
         "payload": payload
     }
 
@@ -57,6 +61,7 @@ def create_physician():
     static = config['STATIC']
     physician_record = Physician(username, password, static['CLINIC_ID'])
     # TODO : request to the clinic to update the staff record
+    request_body = prepare_request(json.dumps(physician_record.__dict__))
 
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
@@ -83,11 +88,14 @@ def login():
 def create_patient():
     new_patient_json = get_patient_info()
      # TODO send the new patient to the clinic
+    request_body = prepare_request(new_patient_json)
 
 
 def update_patient_info():
     current_patient_json = get_patient_info()
     # TODO send the updated patient to the clinic
+    request_body = prepare_request(current_patient_json)
+
 
 def get_patient_info():
     print("Please enter the following information")
@@ -108,11 +116,14 @@ def get_patient_info():
 def add_new_visit():
     new_visit_json = get_visit_info()
     #TODO send the new visit to the clinic
+    request_body = prepare_request(new_visit_json)
 
 
 def update_visit():
     current_visit_json = get_visit_info()
     #TODO send the updated visit to the clinic
+    request_body = prepare_request(current_visit_json)
+
 
 def get_visit_info():
     print("Please enter the following information")
