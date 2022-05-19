@@ -37,9 +37,6 @@ if __name__ == "__main__":
     parse_arguments()
     app = falcon.asgi.App()
     server = Server()
-    # resource = service.resource
-    # log = resource.log
-    # app.add_route('/log', log)
     app.add_route('/create_physician', api.CreatePhysician())
     app.add_route('/create_patient', api.CreatePatient())
     app.add_route('/update_patient', api.UpdatePatient())

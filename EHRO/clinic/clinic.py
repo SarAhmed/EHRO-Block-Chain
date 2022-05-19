@@ -20,6 +20,7 @@ class Clinic:
             self.public_key = clinic_json["public_key"]
             self.staff = clinic_json["staff"]
             self.patients = clinic_json["patients"]
+            self.visits = clinic_json["visits"]
         else:
             config = configparser.ConfigParser()
             config.read("config.ini")
@@ -31,6 +32,7 @@ class Clinic:
             config.set("DYNAMIC", "clinic_private_key", self.private_key)
             self.staff = []
             self.patients = []
+            self.visits = []
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
 
