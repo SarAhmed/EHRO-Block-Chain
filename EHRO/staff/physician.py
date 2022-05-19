@@ -2,7 +2,7 @@ import json
 import random
 import string
 from os import path
-
+from datetime import datetime
 from Cryptodome.PublicKey import RSA
 
 from patient import Patient
@@ -14,10 +14,12 @@ class Physician:
         self.username = username
         self.password = password
         # self.username = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
-        key = RSA.generate(2048)
-        self.private_key = key.export_key().decode('utf-8')
-        self.public_key = key.public_key().export_key().decode('utf-8')
+        # key = RSA.generate(2048)
+        # self.private_key = key.export_key().decode('utf-8')
+        # self.public_key = key.public_key().export_key().decode('utf-8')
         self.clinic_id = clinic_id
+        self.last_update_time = datetime.now()
+
         # _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
         # if not path.exists(_path):
         #     print("ERROR : the clinic does not exist")
@@ -59,6 +61,12 @@ class Physician:
         clinic_id = self.clinic_id
 
         patient = Patient(name, age, weight, blood_pressure, pulse, oxygen_saturation, glucose, clinic_id)
+
+    def generate_rsa_keys(self):
+        key = RSA.generate(2048)
+        private_key = key.export_key().decode('utf-8')
+        public_key = key.public_key().export_key().decode('utf-8')
+        return private_key, public_key
 
 
 if __name__ == '__main__':

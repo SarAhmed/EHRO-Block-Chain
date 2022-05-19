@@ -1,6 +1,6 @@
 import string
 import random
-
+from datetime import datetime
 
 class Patient:
     def __init__(self, username,name, age, weight, blood_pressure, pulse, oxygen_saturation, glucose, clinic_id):
@@ -15,6 +15,7 @@ class Patient:
         self.glucose = glucose
         self.visits = []
         self.clinic_id = clinic_id
+        self.last_update_time = datetime.now()
         # _path = paths.CLINICS_PATH + str(clinic_id) + ".json"
         # clinic_file = open(_path, "r")
         # clinic_object = json.loads(clinic_file.read())
