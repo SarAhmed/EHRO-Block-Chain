@@ -5,7 +5,6 @@ from os import path
 
 from Cryptodome.PublicKey import RSA
 
-from clinc import paths
 from patient import Patient
 from visit import Visit
 

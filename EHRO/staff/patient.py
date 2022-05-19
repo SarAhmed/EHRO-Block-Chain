@@ -3,8 +3,9 @@ import random
 
 
 class Patient:
-    def __init__(self, name, age, weight, blood_pressure, pulse, oxygen_saturation, glucose, clinic_id):
-        self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+    def __init__(self, username,name, age, weight, blood_pressure, pulse, oxygen_saturation, glucose, clinic_id):
+        # self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+        self.username = username
         self.name = name
         self.age = age
         self.weight = weight
