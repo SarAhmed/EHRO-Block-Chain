@@ -15,4 +15,4 @@ class Visit:
         self.temperature = temperature
         self.glucose = glucose
         self.blood_pressure = blood_pressure
-        self.visit_date = datetime.now()
+        self.last_update_time = datetime.now()

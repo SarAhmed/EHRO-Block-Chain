@@ -8,6 +8,8 @@ from Cryptodome.Cipher import PKCS1_OAEP
 from Cryptodome.Signature import pkcs1_15
 from Cryptodome.Cipher import AES
 import base64
+import socket
+import requests
 
 import configparser
 import json
@@ -53,6 +55,27 @@ def prepare_request(obj):
     return request_body
 
 
+def prepare_response(payload):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    user_private_key = RSA.import_key(config['DYNAMIC']['PHYSICIAN_PRIVATE_KEY'])
+    decryptor = PKCS1_OAEP.new(user_private_key)
+    symmetric_key = decryptor.decrypt(payload['encrypted_symmetric_key'])
+    cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=payload['nonce'])
+    plaintext = cipher.decrypt(payload['encrypted_data'])
+    plaintext_bytes = bytes(plaintext,'utf-8')
+    hash_obj = SHA3_256.new()
+    hash_obj.update(plaintext_bytes)
+    clinic_public_key =  RSA.import_key(config['STATIC']['CLINIC_PUBLIC_KEY'])
+
+
+    try :
+        pkcs1_15.new(clinic_public_key).verify(hash_obj,payload['signed_data'])
+        print(plaintext)
+    except (ValueError,TypeError) :
+        print("SOURCE UNVERIFIABLE")
+
+
 def create_physician():
     username = input("Please enter your username: ")
     password = input("Please enter your password: ")
@@ -60,13 +83,29 @@ def create_physician():
     config.read("config.ini")
     static = config['STATIC']
     physician_record = Physician(username, password, static['CLINIC_ID'])
+    private_key, public_key = physician_record.generate_rsa_keys()
     # TODO : request to the clinic to update the staff record
-    request_body = prepare_request(json.dumps(physician_record.__dict__))
+    # WE ARE WAITING FOR THE PUBLIC KEY
+    physician_dict = physician_record.__dict__
+    physician_dict['public_key'] = public_key
+    print(physician_dict)
+    request_body = json.dumps(physician_dict, indent=4, sort_keys=True,default=str)
+    # {
+    #     username:'username',
+    #     password:'password',
+    #     public_key: 'public_key',
+    #     last_update_time: 'time'
+    #     clinic_id:'clinic_id'
+    # }
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    print(request_body)
+    response = requests.post("http://" + "192.168.33.83" + ":8000/create_physician", json=request_body)
 
+    print(response.text)
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
-    config.set("DYNAMIC", "PHYSICIAN_PUBLIC_KEY", physician_record.public_key)
-    config.set("DYNAMIC", "PHYSICIAN_PRIVATE_KEY", physician_record.private_key)
+    config.set("DYNAMIC", "PHYSICIAN_PUBLIC_KEY", public_key)
+    config.set("DYNAMIC", "PHYSICIAN_PRIVATE_KEY", private_key)
     with open('config.ini', 'w') as configfile:  # save
         config.write(configfile)
 
@@ -89,12 +128,20 @@ def create_patient():
     new_patient_json = get_patient_info()
      # TODO send the new patient to the clinic
     request_body = prepare_request(new_patient_json)
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
 
 
 def update_patient_info():
     current_patient_json = get_patient_info()
     # TODO send the updated patient to the clinic
     request_body = prepare_request(current_patient_json)
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + clinic_ip + ":8000/update_patient", json=request_body)
 
 
 def get_patient_info():
@@ -111,18 +158,26 @@ def get_patient_info():
     config.read("config.ini")
     new_patient = Patient(username, name, age, weight, blood_pressure,
                           pulse, oxygen_saturation, glucose, config['STATIC']['CLINIC_ID'])
-    return json.dumps(new_patient.__dict__)
+    return json.dumps(new_patient.__dict__,indent=4, sort_keys=True, default=str)
 
 def add_new_visit():
     new_visit_json = get_visit_info()
     #TODO send the new visit to the clinic
     request_body = prepare_request(new_visit_json)
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + clinic_ip + ":8000/create_patient_visit", json=request_body)
 
 
 def update_visit():
     current_visit_json = get_visit_info()
     #TODO send the updated visit to the clinic
     request_body = prepare_request(current_visit_json)
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + clinic_ip + ":8000/update_patient_visit", json=request_body)
 
 
 def get_visit_info():
@@ -138,11 +193,17 @@ def get_visit_info():
     blood_pressure = input("Blood pressure: ")
     new_visit = Visit(patient_username, type, prescription, diagnosis,
                       reason_for_visit, pulse, temperature, glucose,blood_pressure)
-    return json.dumps(new_visit.__dict__)
+    return json.dumps(new_visit.__dict__,indent=4, sort_keys=True, default=str)
 
 
 def view_patient_history():
-    pass
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    # response = requests.get("http://" + clinic_ip + ":8000/view_patient_history")
+
+
+
 
 
 def gui():
@@ -177,7 +238,7 @@ def gui():
 
 if __name__ == "__main__":
     dic = {'name': 'name'}
-    # gui()
+    gui()
 
     # encoded_data, hashed_data = prepare_request(json.dumps(dic))
     # config = configparser.ConfigParser()
@@ -196,4 +257,4 @@ if __name__ == "__main__":
     # cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=nonce)
     # plaintext = cipher.decrypt(encrypted_data)
     # print(plaintext)
-    prepare_request(json.dumps(dic))
+    # prepare_request(json.dumps(dic))
