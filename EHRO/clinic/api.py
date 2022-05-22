@@ -17,8 +17,9 @@ class CreatePhysician:
                 resp.media = {"msg": "The chosen username is already in use."}
                 return
         clinic_json["staff"].append(body)
+
         with open("DB/clinic.json", "w") as outfile:
-            outfile.write(str(clinic_json))
+            outfile.write(json.dumps(clinic_json, indent=4))
         # Send to EHRO the public key and id.
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "The registration was successful."}

@@ -11,6 +11,8 @@ import falcon.asgi
 import uvicorn
 
 # The api file used to store all endpoints
+from falcon import HTTPError, HTTPInternalServerError
+
 import api
 import argparse
 import configparser
@@ -32,6 +34,12 @@ def parse_arguments():
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
+async def generic_error_handler(ex, req, resp, params):
+    if not isinstance(ex, HTTPError):
+        raise ex
+    else:
+        raise ex
+
 
 if __name__ == "__main__":
     parse_arguments()
@@ -43,6 +51,7 @@ if __name__ == "__main__":
     app.add_route('/create_patient_visit', api.CreatePatientVisit())
     app.add_route('/update_patient_visit', api.UpdatePatientVisit())
     app.add_route('/view_patient_history', api.ViewPatientHistory())
+    app.add_error_handler(Exception, generic_error_handler)
     hostname = socket.gethostname()
     host_ip = socket.gethostbyname(hostname)
-    uvicorn.run(app, host=host_ip, port=8000)
+    uvicorn.run(app, host=host_ip, port=8000,)
