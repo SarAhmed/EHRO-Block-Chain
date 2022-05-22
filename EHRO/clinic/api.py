@@ -9,15 +9,16 @@ from paths import CLINICS_PATH
 
 class CreatePhysician:
     async def on_post(self, req, resp):
-        body = await req.get_medi()
+        body = await req.get_media()
         clinic_json = json.load(open(CLINICS_PATH))
         for physician in clinic_json["staff"]:
             if physician["username"] == body["username"]:
                 resp.status = falcon.HTTP_400
                 resp.media = {"msg": "The chosen username is already in use."}
+                return
         clinic_json["staff"].append(body)
         with open("DB/clinic.json", "w") as outfile:
-            outfile.write(clinic_json)
+            outfile.write(str(clinic_json))
         # Send to EHRO the public key and id.
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "The registration was successful."}
@@ -44,4 +45,3 @@ class UpdatePatientVisit:
 class ViewPatientHistory:
     async def on_get(self, req, resp):
         pass
-
