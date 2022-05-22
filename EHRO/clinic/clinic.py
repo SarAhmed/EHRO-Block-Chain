@@ -32,7 +32,6 @@ class Clinic:
             config.set("DYNAMIC", "clinic_private_key", self.private_key)
             self.staff = []
             self.patients = []
-            self.visits = []
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
 

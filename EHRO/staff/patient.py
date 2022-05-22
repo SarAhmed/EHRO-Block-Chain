@@ -13,7 +13,6 @@ class Patient:
         self.pulse = pulse
         self.oxygen_saturation = oxygen_saturation
         self.glucose = glucose
-        self.visits = []
         self.clinic_id = clinic_id
         self.last_update_time = datetime.now()
         # _path = paths.CLINICS_PATH + str(clinic_id) + ".json"

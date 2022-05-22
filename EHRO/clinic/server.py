@@ -17,6 +17,8 @@ import api
 import argparse
 import configparser
 
+from clinic import Clinic
+
 
 class Server:
     def __init__(self):
@@ -43,9 +45,10 @@ async def generic_error_handler(ex, req, resp, params):
 
 if __name__ == "__main__":
     parse_arguments()
+    clinic = Clinic()
     app = falcon.asgi.App()
     server = Server()
-    app.add_route('/create_physician', api.CreatePhysician())
+    app.add_route('/create_physician', api.CreatePhysician(clinic.public_key))
     app.add_route('/create_patient', api.CreatePatient())
     app.add_route('/update_patient', api.UpdatePatient())
     app.add_route('/create_patient_visit', api.CreatePatientVisit())
