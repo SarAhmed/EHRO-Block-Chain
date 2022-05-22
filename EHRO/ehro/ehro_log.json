@@ -1,0 +1,34 @@
+{
+    "chain": [
+        {
+            "hashed_data": "aman",
+            "hashed_previous_block": null,
+            "index": 0,
+            "previous_block": -1,
+            "previous_patient_record": -1
+        },
+        {
+            "hashed_data": "rafat",
+            "hashed_previous_block": "30c5be9b1681765f573fe09284cc8e43103e8d7f1438709cf906ce8d5897f772",
+            "index": 1,
+            "previous_block": 0,
+            "previous_patient_record": 0
+        }
+    ],
+    "hashes_map": {
+        "aman": [
+            "1",
+            "1"
+        ],
+        "rafat": [
+            "1",
+            "1"
+        ]
+    },
+    "last_index": 1,
+    "patient_map": {
+        "1": {
+            "1": 1
+        }
+    }
+}
