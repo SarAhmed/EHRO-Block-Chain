@@ -102,7 +102,7 @@ def create_physician():
     # print(request_body)
     response = requests.post("http://" + "192.168.33.83" + ":8000/create_physician", json=request_body)
 
-    # print(response.text)
+    print(response.text)
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
     config.set("DYNAMIC", "PHYSICIAN_PUBLIC_KEY", public_key)
@@ -133,8 +133,8 @@ def create_patient():
     print(json.loads(request_body))
     config = configparser.ConfigParser()
     config.read("config.ini")
-    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    # response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
+    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
 
 
 def update_patient_info():
