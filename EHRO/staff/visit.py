@@ -1,6 +1,8 @@
 from datetime import datetime
 import random
 import string
+import json
+
 
 class Visit:
     def __init__(self, patient_id, type, prescription, diagnosis, reason_for_visit, pulse, temperature, glucose,
@@ -16,3 +18,6 @@ class Visit:
         self.glucose = glucose
         self.blood_pressure = blood_pressure
         self.last_update_time = datetime.now()
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

@@ -68,6 +68,10 @@ class Physician:
         public_key = key.public_key().export_key().decode('utf-8')
         return private_key, public_key
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
 
 if __name__ == '__main__':
     p = Physician('QK7DG7X1VIKUOBOW')

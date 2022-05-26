@@ -51,8 +51,9 @@ def prepare_request(obj):
         "encrypted_password": encrypted_password,
         "payload": payload
     }
+    request_body_string = json.dumps(request_body, indent=4, sort_keys=True,default=str)
 
-    return request_body
+    return request_body_string
 
 
 def prepare_response(payload):
@@ -88,7 +89,7 @@ def create_physician():
     # WE ARE WAITING FOR THE PUBLIC KEY
     physician_dict = physician_record.__dict__
     physician_dict['public_key'] = public_key
-    print(physician_dict)
+    # print(physician_dict)
     request_body = json.dumps(physician_dict, indent=4, sort_keys=True,default=str)
     # {
     #     username:'username',
@@ -98,10 +99,10 @@ def create_physician():
     #     clinic_id:'clinic_id'
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    print(request_body)
+    # print(request_body)
     response = requests.post("http://" + "192.168.33.83" + ":8000/create_physician", json=request_body)
 
-    print(response.text)
+    # print(response.text)
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
     config.set("DYNAMIC", "PHYSICIAN_PUBLIC_KEY", public_key)
@@ -128,10 +129,12 @@ def create_patient():
     new_patient_json = get_patient_info()
      # TODO send the new patient to the clinic
     request_body = prepare_request(new_patient_json)
+    # print(type(request_body))
+    print(json.loads(request_body))
     config = configparser.ConfigParser()
     config.read("config.ini")
-    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    # response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
 
 
 def update_patient_info():
@@ -158,7 +161,8 @@ def get_patient_info():
     config.read("config.ini")
     new_patient = Patient(username, name, age, weight, blood_pressure,
                           pulse, oxygen_saturation, glucose, config['STATIC']['CLINIC_ID'])
-    return json.dumps(new_patient.__dict__,indent=4, sort_keys=True, default=str)
+    # return json.dumps(new_patient.__dict__,indent=4, sort_keys=True, default=str)
+    return new_patient.toJSON()
 
 def add_new_visit():
     new_visit_json = get_visit_info()
