@@ -19,7 +19,7 @@ def prepare_request(obj):
     config.read("config.ini")
     user_private_key = RSA.import_key(config['DYNAMIC']['PHYSICIAN_PRIVATE_KEY'])
     # TODO : change the used PK to the PK of the clinic
-    clinic_public_key = RSA.import_key(config['DYNAMIC']['PHYSICIAN_PUBLIC_KEY'])
+    clinic_public_key = RSA.import_key(config['DYNAMIC']['CLINIC_PUBLIC_KEY'])
     obj = bytes(obj, 'utf-8')
     symmetric_key = get_random_bytes(32)
 
@@ -100,13 +100,15 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "192.168.33.83" + ":8000/create_physician", json=request_body)
-
-    print(response.text)
+    response = requests.post("http://" + "192.168.193.83" + ":8000/create_physician", json=request_body)
+    response_json = json.loads(response.text)
+    print(response_json)
+    clinic_public_key = response_json['payload']['clinic_public_key']
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
     config.set("DYNAMIC", "PHYSICIAN_PUBLIC_KEY", public_key)
     config.set("DYNAMIC", "PHYSICIAN_PRIVATE_KEY", private_key)
+    config.set("STATIC", "CLINIC_PUBLIC_KEY", clinic_public_key)
     with open('config.ini', 'w') as configfile:  # save
         config.write(configfile)
 
