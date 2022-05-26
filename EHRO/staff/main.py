@@ -19,7 +19,7 @@ def prepare_request(obj):
     config.read("config.ini")
     user_private_key = RSA.import_key(config['DYNAMIC']['PHYSICIAN_PRIVATE_KEY'])
     # TODO : change the used PK to the PK of the clinic
-    clinic_public_key = RSA.import_key(config['DYNAMIC']['CLINIC_PUBLIC_KEY'])
+    clinic_public_key = RSA.import_key(config['STATIC']['CLINIC_PUBLIC_KEY'])
     obj = bytes(obj, 'utf-8')
     symmetric_key = get_random_bytes(32)
 
