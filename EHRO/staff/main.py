@@ -14,6 +14,19 @@ import requests
 import configparser
 import json
 
+
+def toJSON(obj):
+    return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+def bytes_to_str(bytes):
+    return base64.b64encode(bytes).decode('utf-8')
+
+
+def str_to_bytes(input_str):
+    return base64.b64decode(bytes(input_str,'utf-8'))
+
+
 def prepare_request(obj):
     config = configparser.ConfigParser()
     config.read("config.ini")
@@ -30,7 +43,7 @@ def prepare_request(obj):
 
     encryptor = PKCS1_OAEP.new(clinic_public_key)
     encrypted_symmetric_key = encryptor.encrypt(symmetric_key)
-
+    # print(type(encrypted_symmetric_key))
     aes_encryptor = AES.new(symmetric_key, AES.MODE_EAX)
     nonce = aes_encryptor.nonce
     encrypted_data= aes_encryptor.encrypt(obj)
@@ -40,39 +53,43 @@ def prepare_request(obj):
     encrypted_username = encryptor.encrypt(bytes(username,'utf-8'))
     encrypted_password =  encryptor.encrypt(bytes(password,'utf-8'))
     # formuate the object to be sent in the request body
+    # decoded_symmetric_key = base64.b64encode(encrypted_symmetric_key).decode('utf-8')
+    # decoded_signed_hashed_data = base64.b64encode(signed_hashed_data).decode('utf-8')
+    # decoded_encrypted_data = base64.b64encode(encrypted_data).decode('utf-8')
+    # decoded_nonce = base64.b64encode(nonce).decode('utf-8')
+    # decoded_encrypted_username = base64.b64encode(encrypted_username).decode('utf-8')
+    # decoded_encrypted_password = base64.b64encode(encrypted_password).decode('utf-8')
     payload = {
-        "encrypted_symmetric_key": encrypted_symmetric_key,
-        "signed_data": signed_hashed_data,
-        "encrypted_data" : encrypted_data,
-        "nonce" : nonce
+        "encrypted_symmetric_key": bytes_to_str(encrypted_symmetric_key),
+        "signed_data": bytes_to_str(signed_hashed_data),
+        "encrypted_data" : bytes_to_str(encrypted_data),
+        "nonce" : bytes_to_str(nonce)
     }
     request_body = {
-        "encrypted_username": encrypted_username,
-        "encrypted_password": encrypted_password,
+        "encrypted_username": bytes_to_str(encrypted_username),
+        "encrypted_password": bytes_to_str(encrypted_password),
         "payload": payload
     }
-    request_body_string = json.dumps(request_body, indent=4, sort_keys=True,default=str)
-
-    return request_body_string
-
+    # request_body_string = json.dumps(request_body, indent=4, sort_keys=True,default=str)
+    # request_body_string  = request_body
+    return json.dumps(request_body)
+    # return json.dumps(request_body,indent=4, sort_keys=True,default=str)
 
 def prepare_response(payload):
     config = configparser.ConfigParser()
     config.read("config.ini")
     user_private_key = RSA.import_key(config['DYNAMIC']['PHYSICIAN_PRIVATE_KEY'])
     decryptor = PKCS1_OAEP.new(user_private_key)
-    symmetric_key = decryptor.decrypt(payload['encrypted_symmetric_key'])
-    cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=payload['nonce'])
-    plaintext = cipher.decrypt(payload['encrypted_data'])
-    plaintext_bytes = bytes(plaintext,'utf-8')
+    symmetric_key = decryptor.decrypt(str_to_bytes(payload['encrypted_symmetric_key']))
+    cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=str_to_bytes(payload['nonce']))
+    plaintext = cipher.decrypt(str_to_bytes(payload['encrypted_data']))
+    # plaintext_bytes = bytes(plaintext,'utf-8')
     hash_obj = SHA3_256.new()
-    hash_obj.update(plaintext_bytes)
+    hash_obj.update(plaintext)
     clinic_public_key =  RSA.import_key(config['STATIC']['CLINIC_PUBLIC_KEY'])
-
-
     try :
-        pkcs1_15.new(clinic_public_key).verify(hash_obj,payload['signed_data'])
-        print(plaintext)
+        pkcs1_15.new(clinic_public_key).verify(hash_obj,str_to_bytes(payload['signed_data']))
+        return json.loads(plaintext.decode('utf-8'))
     except (ValueError,TypeError) :
         print("SOURCE UNVERIFIABLE")
 
@@ -102,6 +119,9 @@ def create_physician():
     # print(request_body)
     response = requests.post("http://" + "192.168.193.83" + ":8000/create_physician", json=request_body)
     response_json = json.loads(response.text)
+    if response.status_code != 200 :
+        print(response_json['msg'])
+        return False
     print(response_json)
     clinic_public_key = response_json['payload']['clinic_public_key']
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
@@ -111,6 +131,8 @@ def create_physician():
     config.set("STATIC", "CLINIC_PUBLIC_KEY", clinic_public_key)
     with open('config.ini', 'w') as configfile:  # save
         config.write(configfile)
+    return True
+
 
 def login():
     # verify the input credentials from the config file
@@ -218,8 +240,8 @@ def gui():
     while True:
         option = input("1. Sign up \n2. Login \nSelected option: ")
         if option == "1":
-            create_physician()
-            break
+            if create_physician() :
+                break
         elif option == "2":
             if login():
                 break
@@ -243,8 +265,40 @@ def gui():
 
 
 if __name__ == "__main__":
-    dic = {'name': 'name'}
     gui()
+    # dic = {'name': 'name'}
+    # patient  = json.loads(prepare_request(get_patient_info()))
+    # # print(type(patient))
+    # config = configparser.ConfigParser()
+    # config.read("../clinic/config.ini")
+    # clinic_private_key = RSA.import_key(config['DYNAMIC']['CLINIC_PRIVATE_KEY'])
+    # request_body = patient
+    #
+    # encrypted_symmetric_key = request_body['payload']['encrypted_symmetric_key']
+    # # print(type(encrypted_symmetric_key))
+    # decryptor = PKCS1_OAEP.new(clinic_private_key)
+    # # encrypted_symmetric_key_bytes = bytes(encrypted_symmetric_key,'utf-8')
+    # print(encrypted_symmetric_key)
+    # print(type(encrypted_symmetric_key))
+    # symmetric_key = decryptor.decrypt(base64.b64decode(bytes(encrypted_symmetric_key,'utf-8')))
+    # print(symmetric_key)
+    # cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce= str_to_bytes(request_body['payload']['nonce']))
+    # plaintext = cipher.decrypt(str_to_bytes(request_body['payload']['encrypted_data']))
+    # print(type(plaintext))
+    # plaintext_bytes = plaintext
+    # hash_obj = SHA3_256.new()
+    # hash_obj.update(plaintext_bytes)
+    # config = configparser.ConfigParser()
+    # config.read("config.ini")
+    # clinic_public_key = RSA.import_key(config['DYNAMIC']['physician_public_key'])
+    #
+    # try:
+    #     pkcs1_15.new(clinic_public_key).verify(hash_obj, str_to_bytes(request_body['payload']['signed_data']))
+    #     print(json.loads(plaintext.decode('utf-8')))
+    # except (ValueError, TypeError):
+    #     print("SOURCE UNVERIFIABLE")
+
+    # gui()
 
     # encoded_data, hashed_data = prepare_request(json.dumps(dic))
     # config = configparser.ConfigParser()
