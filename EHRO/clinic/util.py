@@ -9,8 +9,20 @@ from Cryptodome.Random import get_random_bytes
 
 from paths import CLINICS_PATH
 
-CONFIG = configparser.ConfigParser()
-CONFIG.read("config.ini")
+
+
+
+def write_ehro_key_in_config(ehro_public_key):
+    # CONFIG.set("STATIC", "ehro_public_key", ehro_public_key)
+    #
+    # with open('config.ini', 'w') as configfile:  # save
+    #     CONFIG.write(configfile)
+
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    config.set("STATIC", "ehro_public_key", ehro_public_key)
+    with open('config.ini', 'w') as configfile:  # save
+        config.write(configfile)
 
 
 def validate_credentials(username, password):
@@ -32,14 +44,18 @@ def validate_patient_not_exists(data):
 
 
 def decrypt_using_clinic_private_key(encrypted_data):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
     encrypted_data = str_to_bytes(encrypted_data)
-    private_key = RSA.import_key(CONFIG['DYNAMIC']['clinic_private_key'])
+    private_key = RSA.import_key(config['DYNAMIC']['clinic_private_key'])
     decryptor = PKCS1_OAEP.new(private_key)
     return decryptor.decrypt(encrypted_data)
 
 
 def encrypt_using_ehro_public_key(data):
-    ehro_public_key = RSA.import_key(CONFIG['STATIC']['ehro_public_key'])
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    ehro_public_key = RSA.import_key(config['STATIC']['ehro_public_key'])
     encryptor = PKCS1_OAEP.new(ehro_public_key)
     return encryptor.encrypt(data)
 

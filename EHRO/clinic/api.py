@@ -5,6 +5,7 @@ import json
 import falcon
 import falcon.asgi
 import requests
+import configparser
 
 import util
 from paths import CLINICS_PATH
@@ -27,15 +28,19 @@ class CreatePhysician:
         with open("DB/clinic.json", "w") as outfile:
             outfile.write(json.dumps(clinic_json, indent=4))
 
+        config = configparser.ConfigParser()
+        config.read("config.ini")
         request_body = json.dumps({"payload": {
             "physician": body["username"],
-            "clinic_id": util.CONFIG["STATIC"]["clinic_id"],
+            "clinic_id": config["STATIC"]["clinic_id"],
             "physician_public_key": body["public_key"]
         }
         }, indent=4, sort_keys=True, default=str)
-        requests.post("http://192.168.130.71:5000" + "/create_physician", json=request_body)
-        # config.set("STATIC", "ehro_public_key", ehro public key)
-        # config.set("STATIC", "ehro_id", ehro id)
+        response = requests.post("http://192.168.130.71:5000" + "/create_physician", json=request_body)
+        response_json = json.loads(response.text)
+
+        util.write_ehro_key_in_config(response_json["payload"]["ehro_public_key"])
+
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "The registration was successful.",
                       "payload": {"clinic_public_key": self.clinic_public_key}}
