@@ -15,10 +15,8 @@ import configparser
 import json
 
 
-
 def toJSON(obj):
     return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-
 
 
 def bytes_to_str(bytes):
@@ -119,7 +117,7 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "192.168.193.83" + ":8000/create_physician", json=request_body)
+    response = requests.post("http://" + "192.168.130.71" + ":8000/create_physician", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
         print(response_json['msg'])
@@ -159,8 +157,9 @@ def create_patient():
     print(json.loads(request_body))
     config = configparser.ConfigParser()
     config.read("config.ini")
-    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + clinic_ip + ":8000/create_patient", json=request_body)
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + "192.168.130.71" + ":8000/create_patient", json=request_body)
+    print(response.text)
 
 
 def update_patient_info():
@@ -170,7 +169,7 @@ def update_patient_info():
     config = configparser.ConfigParser()
     config.read("config.ini")
     clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + clinic_ip + ":8000/update_patient", json=request_body)
+    response = requests.post("http://" + "192.168.130.71" + ":8000/update_patient", json=request_body)
 
 
 def get_patient_info():
@@ -189,7 +188,6 @@ def get_patient_info():
                           pulse, oxygen_saturation, glucose, config['STATIC']['CLINIC_ID'])
     # return json.dumps(new_patient.__dict__,indent=4, sort_keys=True, default=str)
     return new_patient.toJSON()
-
 
 def add_new_visit():
     new_visit_json = get_visit_info()
@@ -300,9 +298,9 @@ if __name__ == "__main__":
     #     print(json.loads(plaintext.decode('utf-8')))
     # except (ValueError, TypeError):
     #     print("SOURCE UNVERIFIABLE")
-
+    #
     # gui()
-
+    #
     # encoded_data, hashed_data = prepare_request(json.dumps(dic))
     # config = configparser.ConfigParser()
     # config.read("config.ini")
@@ -312,11 +310,11 @@ if __name__ == "__main__":
     #     print("OK")
     # except (ValueError,TypeError) :
     #     print("NOT OK")
-    #  Decryption Code
+    # # Decryption Code
     # decryptor = PKCS1_OAEP.new(user_private_key)
     # original_key = decryptor.decrypt(encrypted_symmetric_key)
     # print(original_key == symmetric_key)
-    # decrypt the symmetric key
+    # #decrypt the symmetric key
     # cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=nonce)
     # plaintext = cipher.decrypt(encrypted_data)
     # print(plaintext)

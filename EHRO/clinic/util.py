@@ -76,3 +76,12 @@ def add_to_database(key, data):
     clinic_json[key].append(json.loads(data))
     with open("DB/clinic.json", "w") as outfile:
         outfile.write(json.dumps(clinic_json, indent=4))
+
+
+def add_signed_to_database(key, data, sign):
+    clinic_json = json.load(open(CLINICS_PATH))
+    data_json = json.loads(data)
+    data_json["sign"] = sign
+    clinic_json[key].append(data_json)
+    with open("DB/clinic.json", "w") as outfile:
+        outfile.write(json.dumps(clinic_json, indent=4))
