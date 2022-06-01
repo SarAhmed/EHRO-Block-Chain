@@ -15,8 +15,10 @@ import configparser
 import json
 
 
+
 def toJSON(obj):
     return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
 
 
 def bytes_to_str(bytes):
@@ -187,6 +189,7 @@ def get_patient_info():
                           pulse, oxygen_saturation, glucose, config['STATIC']['CLINIC_ID'])
     # return json.dumps(new_patient.__dict__,indent=4, sort_keys=True, default=str)
     return new_patient.toJSON()
+
 
 def add_new_visit():
     new_visit_json = get_visit_info()
