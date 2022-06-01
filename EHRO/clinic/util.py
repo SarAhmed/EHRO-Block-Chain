@@ -58,10 +58,11 @@ def bytes_to_str(bytes):
 
 
 def str_to_bytes(input_str):
-    return base64.b64decode(bytes(input_str,'utf-8'))
+    return base64.b64decode(bytes(input_str, 'utf-8'))
+
 
 def add_to_database(key, data):
     clinic_json = json.load(open(CLINICS_PATH))
-    clinic_json[key].append(data)
+    clinic_json[key].append(json.loads(data))
     with open("DB/clinic.json", "w") as outfile:
         outfile.write(json.dumps(clinic_json, indent=4))

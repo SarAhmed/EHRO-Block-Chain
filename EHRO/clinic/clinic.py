@@ -32,6 +32,7 @@ class Clinic:
             config.set("DYNAMIC", "clinic_private_key", self.private_key)
             self.staff = []
             self.patients = []
+            self.visits = []
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
 
@@ -39,10 +40,3 @@ class Clinic:
             with open("DB/clinic.json", "w") as outfile:
                 outfile.write(json_object)
         # Check database existence and intialize parameters.
-
-
-if __name__ == '__main__':
-    c = Clinic()
-    print(json.dumps(c.__dict__))
-    clinic = json.load(open(CLINICS_PATH))
-    # print(path.exists(CLINICS_PATH))
