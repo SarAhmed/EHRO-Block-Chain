@@ -29,6 +29,7 @@ def init_block_chain():
     block_chain_obj.patient_map = block_chain['patient_map']
     return block_chain_obj
 
+
 def init_ehro_keys():
     key = RSA.generate(2048)
     private_key = key.export_key().decode('utf-8')
@@ -41,20 +42,26 @@ def init_ehro_keys():
 
 # should be wrapped to class EHRO with only block chain attribute in addition to the following api calls
 # with the init() for the ehro and block chain and the init() for the PK and PR_K only called once.
-# def add_physician():
-#     pass
-#
-# def add_visit(block_chain):
-#     pass
-#
-# def add_patient(block_chain):
-#     pass
+def add_physician():
+    pass
+
+
+def add_visit(block_chain):
+    pass
+
+
+def add_patient(block_chain):
+    pass
+
+
 
 def run_EHRO():
     init_ehro_keys()
     block_chain = init_block_chain()
     print("WELCOME TO EHR SYSTEM !")
     # TODO : continue the simulation of EHRO
+
+
 
 
 
