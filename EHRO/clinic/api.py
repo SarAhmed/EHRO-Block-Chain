@@ -4,6 +4,7 @@ import json
 
 import falcon
 import falcon.asgi
+import requests
 
 import util
 from paths import CLINICS_PATH
@@ -25,7 +26,14 @@ class CreatePhysician:
         clinic_json["staff"].append(body)
         with open("DB/clinic.json", "w") as outfile:
             outfile.write(json.dumps(clinic_json, indent=4))
-        # TODO: Send to EHRO the public key and id.
+
+        request_body = json.dumps({"payload": {
+            "physician": body["username"],
+            "clinic_id": util.CONFIG["STATIC"]["clinic_id"],
+            "physician_public_key": body["public_key"]
+        }
+        }, indent=4, sort_keys=True, default=str)
+        requests.post("http://192.168.130.71:5000" + "/create_physician", json=request_body)
         # config.set("STATIC", "ehro_public_key", ehro public key)
         # config.set("STATIC", "ehro_id", ehro id)
         resp.status = falcon.HTTP_200
@@ -74,11 +82,13 @@ class CreatePatient:
             resp.media = {"msg": "The data is corrupted."}
             return
 
-        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"])
-        print(data)
-        print(data.decode("utf-8"))
+        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"]).decode("utf-8")
+        if not util.validate_patient_not_exists(data):
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "A patient with the provided username already exists. Please choose another username."}
+            return
 
-        util.add_to_database("patients", data.decode("utf-8"))
+        util.add_signed_to_database("patients", data, payload["signed_data"])
 
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "Patient added successfully."}
