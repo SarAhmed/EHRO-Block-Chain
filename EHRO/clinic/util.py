@@ -1,3 +1,4 @@
+import base64
 import configparser
 import json
 
@@ -21,6 +22,7 @@ def validate_credentials(username, password):
 
 
 def decrypt_using_clinic_private_key(encrypted_data):
+    encrypted_data = str_to_bytes(encrypted_data)
     private_key = RSA.import_key(CONFIG['DYNAMIC']['clinic_private_key'])
     decryptor = PKCS1_OAEP.new(private_key)
     return decryptor.decrypt(encrypted_data)
@@ -33,6 +35,8 @@ def encrypt_using_ehro_public_key(data):
 
 
 def decrypt_using_AES_key(encrypted_data, symmetric_key, nonce):
+    nonce = str_to_bytes(nonce)
+    encrypted_data = str_to_bytes(encrypted_data)
     decryptor = AES.new(symmetric_key, AES.MODE_EAX, nonce=nonce)
     return decryptor.decrypt(encrypted_data)
 
@@ -49,8 +53,16 @@ def encrypt_using_AES(data):
     }
 
 
+def bytes_to_str(bytes):
+    return base64.b64encode(bytes).decode('utf-8')
+
+
+def str_to_bytes(input_str):
+    return base64.b64decode(bytes(input_str, 'utf-8'))
+
+
 def add_to_database(key, data):
     clinic_json = json.load(open(CLINICS_PATH))
-    clinic_json[key].append(data)
+    clinic_json[key].append(json.loads(data))
     with open("DB/clinic.json", "w") as outfile:
         outfile.write(json.dumps(clinic_json, indent=4))

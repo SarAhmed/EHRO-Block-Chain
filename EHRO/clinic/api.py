@@ -46,9 +46,10 @@ class CreatePhysician:
 #    }
 class CreatePatient:
     async def on_post(self, req, resp):
-        body = json.loads(await req.get_media())
-        physician_username = util.decrypt_using_clinic_private_key(body["encrypted_username"])
-        physician_password = util.decrypt_using_clinic_private_key(body["encrypted_password"])
+        body = await req.get_media()
+        body = json.loads(body)
+        physician_username = util.decrypt_using_clinic_private_key(body["encrypted_username"]).decode('utf-8')
+        physician_password = util.decrypt_using_clinic_private_key(body["encrypted_password"]).decode('utf-8')
         if not util.validate_credentials(physician_username, physician_password):
             resp.status = falcon.HTTP_400
             resp.media = {"msg": "Physician credentials are invalid."}
@@ -56,16 +57,16 @@ class CreatePatient:
 
         payload = body["payload"]
         symmetric_key = util.decrypt_using_clinic_private_key(payload["encrypted_symmetric_key"])
-        encrypted_symmetric_key_ehro = util.encrypt_using_ehro_public_key(symmetric_key)
-        request_body_to_ehro = {
-            "encrypted_username": util.encrypt_using_ehro_public_key(physician_username),
-            "payload": {
-                "encrypted_symmetric_key": encrypted_symmetric_key_ehro,
-                "signed_data": payload["signed_data"],
-                "encrypted_data": payload["encrypted_data"],
-                "nonce": payload["nonce"]
-            }
-        }
+        # encrypted_symmetric_key_ehro = util.encrypt_using_ehro_public_key(symmetric_key)
+        # request_body_to_ehro = {
+        #     "encrypted_username": util.encrypt_using_ehro_public_key(physician_username),
+        #     "payload": {
+        #         "encrypted_symmetric_key": encrypted_symmetric_key_ehro,
+        #         "signed_data": payload["signed_data"],
+        #         "encrypted_data": payload["encrypted_data"],
+        #         "nonce": payload["nonce"]
+        #     }
+        # }
         # TODO: Send to EHRO the request
         response = True  # TODO: response of the request sent to the EHRO
         if not response:
@@ -74,10 +75,14 @@ class CreatePatient:
             return
 
         data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"])
-        util.add_to_database("patients", data)
+        print(data)
+        print(data.decode("utf-8"))
+
+        util.add_to_database("patients", data.decode("utf-8"))
 
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "Patient added successfully."}
+
 
 class UpdatePatient:
     async def on_post(self, req, resp):
