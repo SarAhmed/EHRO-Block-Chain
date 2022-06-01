@@ -31,11 +31,13 @@ def init_block_chain():
 
 
 def init_ehro_keys():
+    config = configparser.ConfigParser()
+    config.read(CONFIG_PATH)
+    if config["STATIC"]["EHRO_PUBLIC_KEY"] != "N/A":
+        return
     key = RSA.generate(2048)
     private_key = key.export_key().decode('utf-8')
     public_key = key.public_key().export_key().decode('utf-8')
-    config = configparser.ConfigParser()
-    config.read(CONFIG_PATH)
     config.set("STATIC", "EHRO_PUBLIC_KEY", public_key)
     config.set("STATIC", "EHRO_PRIVATE_KEY", private_key)
 
