@@ -21,6 +21,16 @@ def validate_credentials(username, password):
     return False
 
 
+def validate_patient_not_exists(data):
+    data_json = json.loads(data)
+    username = data_json["username"]
+    clinic_json = json.load(open(CLINICS_PATH))
+    for p in clinic_json["patients"]:
+        if p["username"] == username:
+            return False
+    return True
+
+
 def decrypt_using_clinic_private_key(encrypted_data):
     encrypted_data = str_to_bytes(encrypted_data)
     private_key = RSA.import_key(CONFIG['DYNAMIC']['clinic_private_key'])

@@ -74,11 +74,13 @@ class CreatePatient:
             resp.media = {"msg": "The data is corrupted."}
             return
 
-        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"])
-        print(data)
-        print(data.decode("utf-8"))
+        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"]).decode("utf-8")
+        if not util.validate_patient_not_exists(data):
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "A patient with the provided username already exists. Please choose another username."}
+            return
 
-        util.add_to_database("patients", data.decode("utf-8"))
+        util.add_to_database("patients", data)
 
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "Patient added successfully."}
