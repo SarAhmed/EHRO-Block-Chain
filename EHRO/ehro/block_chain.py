@@ -1,7 +1,10 @@
+import configparser
 import json
+
+from Cryptodome.PublicKey import RSA
 from block import Block
 from Cryptodome.Hash import SHA3_256
-from paths import EHRO_PATH
+from paths import EHRO_PATH, CONFIG_PATH
 
 
 
@@ -13,6 +16,19 @@ class Block_Chain:
         self.patient_map = {}
         # K : hashed_data, V : [patient_username,clinic_id]
         self.hashes_map = {}
+        self.init_ehro_keys()
+
+    def init_ehro_keys(self):
+        config = configparser.ConfigParser()
+        config.read(CONFIG_PATH)
+        if config["STATIC"]["EHRO_PUBLIC_KEY"] != "N/A":
+            return
+        key = RSA.generate(2048)
+        private_key = key.export_key().decode('utf-8')
+        public_key = key.public_key().export_key().decode('utf-8')
+        config.set("STATIC", "EHRO_PUBLIC_KEY", public_key)
+        config.set("STATIC", "EHRO_PRIVATE_KEY", private_key)
+
 
     def add_block(self,patient_username, patient_clinic_id, hashed_data):
         patient_username = str(patient_username)
