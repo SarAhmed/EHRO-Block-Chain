@@ -73,7 +73,8 @@ class CreatePatient:
             resp.media = {"msg": "The data is corrupted."}
             return
 
-        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"])
+        data = util.decrypt_using_AES_key(payload["encrypted_data"],
+                                          symmetric_key, payload["nonce"])
         util.add_to_database("patients", data)
 
         resp.status = falcon.HTTP_200
