@@ -25,10 +25,14 @@ def get_physician_PK(clinic_id, username):
 
 
 
-def get_physician_data(encrypted_clinic_id, encrypted_username, symmetric_key, nonce):
-    cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=str_to_bytes(nonce))
-    username = cipher.decrypt(str_to_bytes(encrypted_username))
-    clinic_id = cipher.decrypt(str_to_bytes(encrypted_clinic_id))
+def get_physician_data(encrypted_clinic_id, encrypted_username,ehro_private_key ):
+    # cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=str_to_bytes(nonce))
+    # username = cipher.decrypt(str_to_bytes(encrypted_username))
+    # clinic_id = cipher.decrypt(str_to_bytes(encrypted_clinic_id))
+    private_key = RSA.import_key(ehro_private_key)
+    decryptor = PKCS1_OAEP.new(private_key)
+    username = decryptor.decrypt(str_to_bytes(encrypted_username))
+    clinic_id = decryptor.decrypt(str_to_bytes(encrypted_clinic_id))
     return clinic_id, username
 
 
@@ -46,7 +50,7 @@ def prepare_response(block_chain, payload, encrypted_username, encrypted_clinic_
     decryptor = PKCS1_OAEP.new(ehro_private_key)
     symmetric_key = decryptor.decrypt(str_to_bytes(payload['encrypted_symmetric_key']))
 
-    clinic_id, username = get_physician_data(encrypted_clinic_id,encrypted_username, symmetric_key, payload["nonce"])
+    clinic_id, username = get_physician_data(encrypted_clinic_id,encrypted_username, ehro_private_key)
 
     cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce=str_to_bytes(payload['nonce']))
     plaintext = cipher.decrypt(str_to_bytes(payload['encrypted_data']))
