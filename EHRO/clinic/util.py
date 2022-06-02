@@ -10,8 +10,6 @@ from Cryptodome.Random import get_random_bytes
 from paths import CLINICS_PATH
 
 
-
-
 def write_ehro_key_in_config(ehro_public_key):
     # CONFIG.set("STATIC", "ehro_public_key", ehro_public_key)
     #
@@ -23,6 +21,12 @@ def write_ehro_key_in_config(ehro_public_key):
     config.set("STATIC", "ehro_public_key", ehro_public_key)
     with open('config.ini', 'w') as configfile:  # save
         config.write(configfile)
+
+
+def get_clinic_id():
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    return config['STATIC']['clinic_id']
 
 
 def validate_credentials(username, password):

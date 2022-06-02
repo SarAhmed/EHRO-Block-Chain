@@ -1,11 +1,11 @@
 # Falcon is the main framework used to implement the generic microservice.
 # Falcon docs: https://falcon.readthedocs.io/en/stable/user/index.html
+import configparser
 import json
 
 import falcon
 import falcon.asgi
 import requests
-import configparser
 
 import util
 from paths import CLINICS_PATH
@@ -36,7 +36,7 @@ class CreatePhysician:
             "physician_public_key": body["public_key"]
         }
         }, indent=4, sort_keys=True, default=str)
-        response = requests.post("http://192.168.130.71:5000" + "/create_physician", json=request_body)
+        response = requests.post("http://172.17.64.1:5000" + "/create_physician", json=request_body)
         response_json = json.loads(response.text)
 
         util.write_ehro_key_in_config(response_json["payload"]["ehro_public_key"])
@@ -70,27 +70,29 @@ class CreatePatient:
 
         payload = body["payload"]
         symmetric_key = util.decrypt_using_clinic_private_key(payload["encrypted_symmetric_key"])
-        # encrypted_symmetric_key_ehro = util.encrypt_using_ehro_public_key(symmetric_key)
-        # request_body_to_ehro = {
-        #     "encrypted_username": util.encrypt_using_ehro_public_key(physician_username),
-        #     "payload": {
-        #         "encrypted_symmetric_key": encrypted_symmetric_key_ehro,
-        #         "signed_data": payload["signed_data"],
-        #         "encrypted_data": payload["encrypted_data"],
-        #         "nonce": payload["nonce"]
-        #     }
-        # }
-        # TODO: Send to EHRO the request
-        response = True  # TODO: response of the request sent to the EHRO
-        if not response:
-            resp.status = falcon.HTTP_400
-            resp.media = {"msg": "The data is corrupted."}
-            return
 
         data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"]).decode("utf-8")
         if not util.validate_patient_not_exists(data):
             resp.status = falcon.HTTP_400
             resp.media = {"msg": "A patient with the provided username already exists. Please choose another username."}
+            return
+
+        encrypted_symmetric_key_ehro = util.encrypt_using_ehro_public_key(symmetric_key)
+        request_body_to_ehro = json.dumps({
+            "encrypted_username": util.bytes_to_str(util.encrypt_using_ehro_public_key(bytes(physician_username, "utf-8"))),
+            "encrypted_clinic_id": util.bytes_to_str(util.encrypt_using_ehro_public_key(bytes(util.get_clinic_id(), "utf-8"))),
+            "payload": {
+                "encrypted_symmetric_key": util.bytes_to_str(encrypted_symmetric_key_ehro),
+                "signed_data": payload["signed_data"],
+                "encrypted_data": payload["encrypted_data"],
+                "nonce": payload["nonce"]
+            }
+        }, indent=4, sort_keys=True, default=str)
+
+        response = requests.post("http://172.17.64.1:5000" + "/create_patient", json=request_body_to_ehro)
+        if not response:
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "The data is corrupted."}
             return
 
         util.add_signed_to_database("patients", data, payload["signed_data"])
