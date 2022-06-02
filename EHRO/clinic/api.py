@@ -95,8 +95,8 @@ class CreatePatient:
             resp.media = {"msg": "The data is corrupted."}
             return
 
-        util.add_signed_to_database("patients", data, payload["signed_data"])
-
+        util.add_to_database("patients", data)
+        util.add_req_to_database(request_body_to_ehro,  payload["signed_data"])
         resp.status = falcon.HTTP_200
         resp.media = {"msg": "Patient added successfully."}
 
