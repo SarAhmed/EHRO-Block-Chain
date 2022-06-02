@@ -22,13 +22,16 @@ class Block_Chain:
         config = configparser.ConfigParser()
         config.read(CONFIG_PATH)
         if config["STATIC"]["EHRO_PUBLIC_KEY"] != "N/A":
+            print("no keys")
             return
+
         key = RSA.generate(2048)
         private_key = key.export_key().decode('utf-8')
         public_key = key.public_key().export_key().decode('utf-8')
         config.set("STATIC", "EHRO_PUBLIC_KEY", public_key)
         config.set("STATIC", "EHRO_PRIVATE_KEY", private_key)
-
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
 
     def add_block(self,patient_username, patient_clinic_id, hashed_data):
         patient_username = str(patient_username)
