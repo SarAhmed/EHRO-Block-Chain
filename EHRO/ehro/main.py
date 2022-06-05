@@ -38,6 +38,10 @@ from paths import EHRO_PATH, CONFIG_PATH, PHYSICICANS_PATH
 from EHRO.ehro.api import get_physician_data, get_physician_PK, str_to_bytes
 
 
+def toJSON(obj):
+    return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
 def init_ehro_keys():
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH)
@@ -96,8 +100,8 @@ def prepare_response(signed_data, payload, encrypted_username, encrypted_clinic_
 
 
 def verify_hash(requested_hash):
-    params ={"requested_hash": requested_hash}
-    response = requests.get("http://127.0.0.1:8000/verify_hash",params=params)
+    request_body ={"requested_hash": requested_hash}
+    response = requests.post("http://127.0.0.1:8000/verify_hash",json=toJSON(request_body))
     if response.status_code != 200:
         return False
     #TODO Test the response.json() and check that it returns the body of the response
