@@ -138,11 +138,6 @@ class CreateRecord:
             resp.status = falcon.HTTP_400
             resp.media = {"msg": "The verification failed."}
 
-class PatientHistory:
-    def __init__(self, block_chain):
-        self.block_chain = block_chain
 
-    async def on_get(self,req,resp):
-        body = await req.get_media()
-        body = json.loads(body)
-        clinic_id ,username = get_credentials_from_request(body["encrypted_username"],body["encrypted_clinic_id"])
+
+
