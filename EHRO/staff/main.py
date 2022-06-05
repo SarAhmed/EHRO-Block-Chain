@@ -92,7 +92,8 @@ def prepare_response(payload):
         pkcs1_15.new(clinic_public_key).verify(hash_obj,str_to_bytes(payload['signed_data']))
         return json.loads(plaintext.decode('utf-8'))
     except (ValueError,TypeError) :
-        print("SOURCE UNVERIFIABLE")
+        return {"error": "SOURCE UNVERIFIABLE"}
+        print(colored("SOURCE UNVERIFIABLE","red"))
 
 
 def create_physician():
@@ -118,10 +119,11 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "192.168.246.83" + ":8000/create_physician", json=request_body)
+    response = requests.post("http://" + "71.1.1.126" + ":8000/create_physician", json=request_body)
+    print(response)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
-        print(response_json['msg'])
+        print(colored(response_json['msg'],"red"))
         return False
     # print(response_json)
     clinic_public_key = response_json['payload']['clinic_public_key']
@@ -246,10 +248,21 @@ def get_visit_info(is_update = False):
 
 
 def view_patient_history():
+    username = input("Username: ")
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    # response = requests.get("http://" + clinic_ip + ":8000/view_patient_history")
+    request_body = prepare_request(toJSON({"username":username}))
+    response = requests.post("http://" + "71.1.1.126" + ":8000/view_patient_history",json=request_body)
+    response_json = json.loads(response.text)
+    if response.status_code != 200:
+        print(response_json)
+        # print(colored(response_json['msg'], "red"))
+        return False
+    data = prepare_response(response_json["payload"])
+    if not "error" in data:
+        print(data)
+
 
 
 

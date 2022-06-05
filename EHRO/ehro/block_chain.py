@@ -22,7 +22,6 @@ class Block_Chain:
         config = configparser.ConfigParser()
         config.read(CONFIG_PATH)
         if config["STATIC"]["EHRO_PUBLIC_KEY"] != "N/A":
-            print("no keys")
             return
 
         key = RSA.generate(2048)
