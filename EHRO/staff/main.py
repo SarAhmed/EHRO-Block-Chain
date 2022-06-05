@@ -11,7 +11,7 @@ import base64
 import socket
 import requests
 import argparse
-
+from termcolor import colored
 import configparser
 import json
 
@@ -118,7 +118,7 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "172.17.64.1" + ":8000/create_physician", json=request_body)
+    response = requests.post("http://" + "192.168.246.83" + ":8000/create_physician", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
         print(response_json['msg'])
@@ -159,12 +159,13 @@ def create_patient():
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "192.168.130.71" + ":8000/create_patient", json=request_body)
+    response = requests.post("http://" + "71.1.1.126" + ":8000/create_patient", json=request_body)
     response_json = json.loads(response.text)
-    if response.status_code != 200 :
-        print(response_json['msg'])
+    if response.status_code == 200:
+        print(colored(response_json['msg'], 'green'))
     else:
-        print(response.text)
+        print(colored(response_json['msg'], 'red'))
+
 
 
 def update_patient_info():
@@ -174,8 +175,13 @@ def update_patient_info():
     config = configparser.ConfigParser()
     config.read("config.ini")
     #clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "172.17.64.1" + ":8000/update_patient", json=request_body)
-    print(response.text)
+    response = requests.post("http://" + "71.1.1.126" + ":8000/update_patient", json=request_body)
+    response_json = json.loads(response.text)
+    if response.status_code == 200:
+        print(colored(response_json['msg'],'green'))
+    else:
+        print(colored(response_json['msg'],'red'))
+
 
 
 def get_patient_info():
@@ -203,21 +209,33 @@ def add_new_visit():
     config.read("config.ini")
     clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     response = requests.post("http://" + clinic_ip + ":8000/create_patient_visit", json=request_body)
+    response_json = json.loads(response.text)
+    if response.status_code == 200:
+        print(colored(response_json['msg'], 'green'))
+    else:
+        print(colored(response_json['msg'], 'red'))
 
 
 def update_visit():
-    current_visit_json = get_visit_info()
+    current_visit_json = get_visit_info(True)
     #TODO send the updated visit to the clinic
     request_body = prepare_request(current_visit_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
     clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     response = requests.post("http://" + clinic_ip + ":8000/update_patient_visit", json=request_body)
+    response_json = json.loads(response.text)
+    if response.status_code == 200:
+        print(colored(response_json['msg'], 'green'))
+    else:
+        print(colored(response_json['msg'], 'red'))
 
-
-def get_visit_info():
+def get_visit_info(is_update = False):
     print("Please enter the following information")
     patient_username = input("Patient username: ")
+    visit_id = None
+    if is_update:
+        visit_id = input("Visit ID: ")
     type = input("Visit type: (regular) or (lab)")
     prescription = input("Prescription: ")
     diagnosis = input("Diagnosis: ")
@@ -227,7 +245,7 @@ def get_visit_info():
     glucose = input("Glucose: ")
     blood_pressure = input("Blood pressure: ")
     new_visit = Visit(patient_username, type, prescription, diagnosis,
-                      reason_for_visit, pulse, temperature, glucose,blood_pressure)
+                      reason_for_visit, pulse, temperature, glucose,blood_pressure, visit_id)
     return json.dumps(new_visit.__dict__,indent=4, sort_keys=True, default=str)
 
 

@@ -5,10 +5,13 @@ import json
 
 
 class Visit:
-    def __init__(self, patient_id, type, prescription, diagnosis, reason_for_visit, pulse, temperature, glucose,
-                 blood_pressure):
-        self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
-        self.patient_id = patient_id
+    def __init__(self, username, type, prescription, diagnosis, reason_for_visit, pulse, temperature, glucose,
+                 blood_pressure,id = None):
+        if id == None:
+            self.id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+        else:
+            self.id = id
+        self.username = username
         self.type = type
         self.prescription = prescription
         self.diagnosis = diagnosis

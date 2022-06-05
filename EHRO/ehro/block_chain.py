@@ -71,7 +71,7 @@ class Block_Chain:
         patient_last_record_index = self.patient_map[patient_username][ clinic_id]
         records = []
         while patient_last_record_index != -1:
-            records.append(self.chain[patient_last_record_index])
+            records.append(self.chain[patient_last_record_index].hashed_data)
             patient_last_record_index = self.chain[patient_last_record_index].previous_patient_record
         return records
 

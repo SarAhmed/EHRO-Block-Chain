@@ -45,6 +45,12 @@ def get_patient_username(plaintext):
     plaintext_json = json.loads(plaintext_str)
     return plaintext_json["username"]
 
+def get_credentials_from_request(encrypted_username, encrypted_clinic_id):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    ehro_private_key = RSA.import_key(config['STATIC']['EHRO_PRIVATE_KEY'])
+    clinic_id, username = get_physician_data(encrypted_clinic_id, encrypted_username, ehro_private_key)
+    return clinic_id, username
 
 def prepare_response(block_chain, payload, encrypted_username, encrypted_clinic_id):
     config = configparser.ConfigParser()
@@ -131,3 +137,12 @@ class CreateRecord:
         else :
             resp.status = falcon.HTTP_400
             resp.media = {"msg": "The verification failed."}
+
+class PatientHistory:
+    def __init__(self, block_chain):
+        self.block_chain = block_chain
+
+    async def on_get(self,req,resp):
+        body = await req.get_media()
+        body = json.loads(body)
+        clinic_id ,username = get_credentials_from_request(body["encrypted_username"],body["encrypted_clinic_id"])
