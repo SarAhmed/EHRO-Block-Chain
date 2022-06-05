@@ -159,7 +159,11 @@ def create_patient():
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     response = requests.post("http://" + "192.168.130.71" + ":8000/create_patient", json=request_body)
-    print(response.text)
+    response_json = json.loads(response.text)
+    if response.status_code != 200 :
+        print(response_json['msg'])
+    else:
+        print(response.text)
 
 
 def update_patient_info():
