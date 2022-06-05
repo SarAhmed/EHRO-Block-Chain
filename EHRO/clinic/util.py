@@ -4,8 +4,10 @@ import json
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Cipher import PKCS1_OAEP
+from Cryptodome.Hash import SHA3_256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Random import get_random_bytes
+from Cryptodome.Signature import pkcs1_15
 
 from paths import CLINICS_PATH
 
@@ -164,3 +166,40 @@ def get_staff_public_key(username):
     for p in clinic_json["staff"]:
         if p["username"] == username:
             return p["public_key"]
+
+def prepare_request(obj, username):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_private_key = RSA.import_key(config['DYNAMIC']['clinic_private_key'])
+    physician_public_key = RSA.import_key(get_staff_public_key(username))
+    obj = bytes(obj, 'utf-8')
+    symmetric_key = get_random_bytes(32)
+
+    hash_obj = SHA3_256.new()
+    hash_obj.update(obj)
+
+    signed_hashed_data = pkcs1_15.new(clinic_private_key).sign(hash_obj)
+
+    encryptor = PKCS1_OAEP.new(physician_public_key)
+    encrypted_symmetric_key = encryptor.encrypt(symmetric_key)
+    aes_encryptor = AES.new(symmetric_key, AES.MODE_EAX)
+    nonce = aes_encryptor.nonce
+    encrypted_data = aes_encryptor.encrypt(obj)
+    payload = {
+        "encrypted_symmetric_key": bytes_to_str(encrypted_symmetric_key),
+        "signed_data": bytes_to_str(signed_hashed_data),
+        "encrypted_data": bytes_to_str(encrypted_data),
+        "nonce": bytes_to_str(nonce)
+    }
+    request_body = {
+        "payload": payload
+    }
+    return json.dumps(request_body)
+
+
+def get_packet(hash):
+    clinic_json = json.load(open(CLINICS_PATH))
+    if clinic_json["requests"].has_key(hash):
+        return clinic_json["requests"][hash]
+
+

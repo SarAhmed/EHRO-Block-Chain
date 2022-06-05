@@ -54,6 +54,7 @@ if __name__ == "__main__":
     app.add_route('/create_patient_visit', api.CreatePatientVisit())
     app.add_route('/update_patient_visit', api.UpdatePatientVisit())
     app.add_route('/view_patient_history', api.ViewPatientHistory())
+    app.add_route('/verify_hash', api.VerifyHash())
     app.add_error_handler(Exception, generic_error_handler)
     hostname = socket.gethostname()
     host_ip = socket.gethostbyname(hostname)

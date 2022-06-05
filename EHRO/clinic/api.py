@@ -104,7 +104,7 @@ class ViewPatientHistory:
             return
         patient_data = util.get_patient_history(data)
 
-        req_body = prepare_request(patient_data, physician_username)
+        req_body = util.prepare_request(patient_data, physician_username)
         resp.status = falcon.HTTP_200
         resp.media = req_body
 
@@ -154,7 +154,6 @@ async def req_create(req, resp, is_existing_patient, entry_type, description):
         resp.media = {"msg": "The data is corrupted."}
         return
 
-    # TODO: Multiple entries would be represented in the DB for the same patient
     util.add_to_database(entry_type, data)
     util.add_req_to_database(request_body_to_ehro, payload["signed_data"])
     resp.status = falcon.HTTP_200
@@ -213,31 +212,14 @@ async def req_update(req, resp, entry_type, description):
     resp.media = {"msg": description + ":: Request handled successfully."}
 
 
-def prepare_request(obj, username):
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    clinic_private_key = RSA.import_key(config['DYNAMIC']['clinic_private_key'])
-    physician_public_key = RSA.import_key(util.get_staff_public_key(username))
-    obj = bytes(obj, 'utf-8')
-    symmetric_key = get_random_bytes(32)
-
-    hash_obj = SHA3_256.new()
-    hash_obj.update(obj)
-
-    signed_hashed_data = pkcs1_15.new(clinic_private_key).sign(hash_obj)
-
-    encryptor = PKCS1_OAEP.new(physician_public_key)
-    encrypted_symmetric_key = encryptor.encrypt(symmetric_key)
-    aes_encryptor = AES.new(symmetric_key, AES.MODE_EAX)
-    nonce = aes_encryptor.nonce
-    encrypted_data = aes_encryptor.encrypt(obj)
-    payload = {
-        "encrypted_symmetric_key": util.bytes_to_str(encrypted_symmetric_key),
-        "signed_data": util.bytes_to_str(signed_hashed_data),
-        "encrypted_data": util.bytes_to_str(encrypted_data),
-        "nonce": util.bytes_to_str(nonce)
-    }
-    request_body = {
-        "payload": payload
-    }
-    return json.dumps(request_body)
+class VerifyHash:
+    async def on_post(self, req, resp):
+        body = await req.get_media()
+        body = json.loads(body)
+        packet = util.get_packet(body["requested_hash"])
+        if packet is not None:
+            resp.status = falcon.HTTP_200
+            resp.media = packet
+        else:
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "Record does not exists"}
