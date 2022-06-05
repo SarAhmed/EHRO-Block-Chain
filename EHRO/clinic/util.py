@@ -137,3 +137,29 @@ def get_visit_idx(data):
             return idx
         idx = idx + 1
     return -1
+
+
+def get_patient_history(data):
+    data_json = json.loads(data)
+    username = data_json["username"]
+    clinic_json = json.load(open(CLINICS_PATH))
+
+    profile = None
+    for p in clinic_json["patients"]:
+        if p["username"] == username:
+            profile = p
+            break
+
+    visits = []
+    for v in clinic_json["visits"]:
+        if v["username"] == username:
+            visits.append(v)
+
+    return {"profile": profile, "visits": visits}
+
+
+def get_staff_public_key(username):
+    clinic_json = json.load(open(CLINICS_PATH))
+    for p in clinic_json["staff"]:
+        if p["username"] == username:
+            return p["public_key"]

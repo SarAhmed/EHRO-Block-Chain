@@ -6,6 +6,11 @@ import json
 import falcon
 import falcon.asgi
 import requests
+from Cryptodome.Cipher import PKCS1_OAEP, AES
+from Cryptodome.Hash import SHA3_256
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Random import get_random_bytes
+from Cryptodome.Signature import pkcs1_15
 
 import util
 from paths import CLINICS_PATH
@@ -79,7 +84,29 @@ class UpdatePatientVisit:
 
 class ViewPatientHistory:
     async def on_get(self, req, resp):
-        pass
+        body = await req.get_media()
+        body = json.loads(body)
+        physician_username = util.decrypt_using_clinic_private_key(body["encrypted_username"]).decode('utf-8')
+        physician_password = util.decrypt_using_clinic_private_key(body["encrypted_password"]).decode('utf-8')
+        if not util.validate_credentials(physician_username, physician_password):
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "Physician credentials are invalid."}
+            return
+
+        payload = body["payload"]
+        symmetric_key = util.decrypt_using_clinic_private_key(payload["encrypted_symmetric_key"])
+
+        data = util.decrypt_using_AES_key(payload["encrypted_data"], symmetric_key, payload["nonce"]).decode("utf-8")
+
+        if util.validate_patient_not_exists(data):
+            resp.status = falcon.HTTP_400
+            resp.media = {"msg": "A patient with the provided username does not exist. Please choose another username."}
+            return
+
+        patient_data = util.get_patient_history(data)
+        req_body = prepare_request(patient_data, physician_username)
+        resp.status = falcon.HTTP_200
+        resp.media = req_body
 
 
 async def req_create(req, resp, is_existing_patient, entry_type, description):
@@ -184,3 +211,33 @@ async def req_update(req, resp, entry_type, description):
     util.add_req_to_database(request_body_to_ehro, payload["signed_data"])
     resp.status = falcon.HTTP_200
     resp.media = {"msg": description + ":: Request handled successfully."}
+
+
+def prepare_request(obj, username):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    clinic_private_key = RSA.import_key(config['DYNAMIC']['clinic_private_key'])
+    physician_public_key = RSA.import_key(util.get_staff_public_key(username))
+    obj = bytes(obj, 'utf-8')
+    symmetric_key = get_random_bytes(32)
+
+    hash_obj = SHA3_256.new()
+    hash_obj.update(obj)
+
+    signed_hashed_data = pkcs1_15.new(clinic_private_key).sign(hash_obj)
+
+    encryptor = PKCS1_OAEP.new(physician_public_key)
+    encrypted_symmetric_key = encryptor.encrypt(symmetric_key)
+    aes_encryptor = AES.new(symmetric_key, AES.MODE_EAX)
+    nonce = aes_encryptor.nonce
+    encrypted_data = aes_encryptor.encrypt(obj)
+    payload = {
+        "encrypted_symmetric_key": util.bytes_to_str(encrypted_symmetric_key),
+        "signed_data": util.bytes_to_str(signed_hashed_data),
+        "encrypted_data": util.bytes_to_str(encrypted_data),
+        "nonce": util.bytes_to_str(nonce)
+    }
+    request_body = {
+        "payload": payload
+    }
+    return json.dumps(request_body)
