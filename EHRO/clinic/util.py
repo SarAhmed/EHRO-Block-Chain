@@ -199,7 +199,7 @@ def prepare_request(obj, username):
 
 def get_packet(hash):
     clinic_json = json.load(open(CLINICS_PATH))
-    if clinic_json["requests"].has_key(hash):
+    if hash in clinic_json["requests"]:
         return clinic_json["requests"][hash]
 
 

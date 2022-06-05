@@ -92,7 +92,7 @@ def prepare_response(signed_data, payload, encrypted_username, encrypted_clinic_
         # print(type(get_patient_username(plaintext)), get_patient_username(plaintext))
         # print(type(clinic_id), clinic_id)
     except (ValueError,TypeError) :
-        # print("not ok")
+        print("not ok")
         return False
     # print("all is ok")
     print("Hash is verified")
@@ -102,13 +102,14 @@ def prepare_response(signed_data, payload, encrypted_username, encrypted_clinic_
 def verify_hash(requested_hash):
     request_body ={"requested_hash": requested_hash}
     response = requests.post("http://127.0.0.1:8000/verify_hash",json=toJSON(request_body))
+    body = response.json()
     if response.status_code != 200:
+        print(colored(body["msg"],"red"))
         return False
     #TODO Test the response.json() and check that it returns the body of the response
-    body = response.json()
     is_data_verified = prepare_response(requested_hash, body["payload"], body["encrypted_username"], body["encrypted_clinic_id"])
     if is_data_verified:
-        print(colored("Hash is verified correctly!","Green"))
+        print(colored("Hash is verified correctly!","green"))
     else:
         print(colored("Hash is incorrect!","red"))
 

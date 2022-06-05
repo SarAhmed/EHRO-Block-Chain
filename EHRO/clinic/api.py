@@ -222,4 +222,4 @@ class VerifyHash:
             resp.media = packet
         else:
             resp.status = falcon.HTTP_400
-            resp.media = {"msg": "Record does not exists"}
+            resp.media = {"msg": "Record does not exists in the clinic database!"}
