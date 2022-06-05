@@ -38,13 +38,19 @@ def validate_credentials(username, password):
 
 
 def validate_patient_not_exists(data):
+    return get_patient_idx(data) == -1
+
+
+def get_patient_idx(data):
     data_json = json.loads(data)
     username = data_json["username"]
     clinic_json = json.load(open(CLINICS_PATH))
+    idx = 0
     for p in clinic_json["patients"]:
         if p["username"] == username:
-            return False
-    return True
+            return idx
+        idx = idx + 1
+    return -1
 
 
 def decrypt_using_clinic_private_key(encrypted_data):
@@ -103,3 +109,31 @@ def add_req_to_database(req, sign):
     clinic_json["requests"][sign] = json.loads(req)
     with open("DB/clinic.json", "w") as outfile:
         outfile.write(json.dumps(clinic_json, indent=4))
+
+
+def remove_from_database(entry_type, data):
+    clinic_json = json.load(open(CLINICS_PATH))
+    if entry_type == "patients":
+        clinic_json["patients"].pop(get_patient_idx(data))
+
+    if entry_type == "visits":
+        clinic_json["visits"].pop(get_visit_idx(data))
+
+    with open("DB/clinic.json", "w") as outfile:
+        outfile.write(json.dumps(clinic_json, indent=4))
+
+
+def validate_visit_not_exists(data):
+    return get_visit_idx(data) == -1
+
+
+def get_visit_idx(data):
+    data_json = json.loads(data)
+    visit_id = data_json["id"]
+    clinic_json = json.load(open(CLINICS_PATH))
+    idx = 0
+    for p in clinic_json["visits"]:
+        if p["id"] == visit_id:
+            return idx
+        idx = idx + 1
+    return -1
