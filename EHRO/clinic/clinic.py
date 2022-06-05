@@ -21,6 +21,7 @@ class Clinic:
             self.staff = clinic_json["staff"]
             self.patients = clinic_json["patients"]
             self.visits = clinic_json["visits"]
+            self.requests = clinic_json["requests"]
         else:
             config = configparser.ConfigParser()
             config.read("config.ini")
@@ -33,6 +34,7 @@ class Clinic:
             self.staff = []
             self.patients = []
             self.visits = []
+            self.requests = {}
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
 

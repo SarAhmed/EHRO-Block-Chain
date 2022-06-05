@@ -10,6 +10,7 @@ from Cryptodome.Cipher import AES
 import base64
 import socket
 import requests
+import argparse
 
 import configparser
 import json
@@ -117,12 +118,12 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "192.168.130.71" + ":8000/create_physician", json=request_body)
+    response = requests.post("http://" + "172.17.64.1" + ":8000/create_physician", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
         print(response_json['msg'])
         return False
-    print(response_json)
+    # print(response_json)
     clinic_public_key = response_json['payload']['clinic_public_key']
     config.set("DYNAMIC", "PHYSICIAN_USERNAME", username)
     config.set("DYNAMIC", "PHYSICIAN_PASSWORD", password)
@@ -154,7 +155,7 @@ def create_patient():
      # TODO send the new patient to the clinic
     request_body = prepare_request(new_patient_json)
     # print(type(request_body))
-    print(json.loads(request_body))
+    # print(json.loads(request_body))
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
@@ -172,8 +173,9 @@ def update_patient_info():
     request_body = prepare_request(current_patient_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
-    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "192.168.130.71" + ":8000/update_patient", json=request_body)
+    #clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + "172.17.64.1" + ":8000/update_patient", json=request_body)
+    print(response.text)
 
 
 def get_patient_info():
@@ -262,14 +264,29 @@ def gui():
         if option == "1":
             create_patient()
         elif option == "2":
-            add_new_visit()
+            update_patient_info()
         elif option == "3":
+            add_new_visit()
+        elif option == "4":
+            update_visit()
+        elif option == "5":
             view_patient_history()
         else:
             print("Please select a valid option.")
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--clinic_id', required=True)
+    args = parser.parse_args()
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    config["STATIC"]["clinic_id"] = args.clinic_id
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+
 
 if __name__ == "__main__":
+    parse_arguments()
     gui()
     # dic = {'name': 'name'}
     # patient  = json.loads(prepare_request(get_patient_info()))
