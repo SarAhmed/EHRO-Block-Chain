@@ -152,7 +152,6 @@ def login():
 
 def create_patient():
     new_patient_json = get_patient_info()
-     # TODO send the new patient to the clinic
     request_body = prepare_request(new_patient_json)
     # print(type(request_body))
     # print(json.loads(request_body))
@@ -170,7 +169,6 @@ def create_patient():
 
 def update_patient_info():
     current_patient_json = get_patient_info()
-    # TODO send the updated patient to the clinic
     request_body = prepare_request(current_patient_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
@@ -203,7 +201,6 @@ def get_patient_info():
 
 def add_new_visit():
     new_visit_json = get_visit_info()
-    #TODO send the new visit to the clinic
     request_body = prepare_request(new_visit_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
@@ -218,7 +215,6 @@ def add_new_visit():
 
 def update_visit():
     current_visit_json = get_visit_info(True)
-    #TODO send the updated visit to the clinic
     request_body = prepare_request(current_visit_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
@@ -232,10 +228,10 @@ def update_visit():
 
 def get_visit_info(is_update = False):
     print("Please enter the following information")
-    patient_username = input("Patient username: ")
     visit_id = None
     if is_update:
         visit_id = input("Visit ID: ")
+    patient_username = input("Patient username: ")
     type = input("Visit type: (regular) or (lab)")
     prescription = input("Prescription: ")
     diagnosis = input("Diagnosis: ")
