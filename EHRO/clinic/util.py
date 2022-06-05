@@ -155,7 +155,8 @@ def get_patient_history(data):
         if v["username"] == username:
             visits.append(v)
 
-    return {"profile": profile, "visits": visits}
+    return json.dumps({"profile": profile, "visits": visits}, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
 
 
 def get_staff_public_key(username):

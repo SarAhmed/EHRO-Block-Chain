@@ -41,7 +41,7 @@ class CreatePhysician:
             "physician_public_key": body["public_key"]
         }
         }, indent=4, sort_keys=True, default=str)
-        response = requests.post("http://192.168.60.71:5000" + "/create_physician", json=request_body)
+        response = requests.post("http://127.0.0.1:5000" + "/create_physician", json=request_body)
         response_json = json.loads(response.text)
 
         util.write_ehro_key_in_config(response_json["payload"]["ehro_public_key"])
@@ -83,7 +83,7 @@ class UpdatePatientVisit:
 
 
 class ViewPatientHistory:
-    async def on_get(self, req, resp):
+    async def on_post(self, req, resp):
         body = await req.get_media()
         body = json.loads(body)
         physician_username = util.decrypt_using_clinic_private_key(body["encrypted_username"]).decode('utf-8')
@@ -102,8 +102,8 @@ class ViewPatientHistory:
             resp.status = falcon.HTTP_400
             resp.media = {"msg": "A patient with the provided username does not exist. Please choose another username."}
             return
-
         patient_data = util.get_patient_history(data)
+
         req_body = prepare_request(patient_data, physician_username)
         resp.status = falcon.HTTP_200
         resp.media = req_body
@@ -148,7 +148,7 @@ async def req_create(req, resp, is_existing_patient, entry_type, description):
         }
     }, indent=4, sort_keys=True, default=str)
 
-    response = requests.post("http://192.168.60.71:5000" + "/block_chain", json=request_body_to_ehro)
+    response = requests.post("http://127.0.0.1:5000" + "/block_chain", json=request_body_to_ehro)
     if not response:
         resp.status = falcon.HTTP_400
         resp.media = {"msg": "The data is corrupted."}
@@ -200,7 +200,7 @@ async def req_update(req, resp, entry_type, description):
         }
     }, indent=4, sort_keys=True, default=str)
 
-    response = requests.post("http://192.168.60.71:5000" + "/block_chain", json=request_body_to_ehro)
+    response = requests.post("http://71.1.1.126:5000" + "/block_chain", json=request_body_to_ehro)
     if not response:
         resp.status = falcon.HTTP_400
         resp.media = {"msg": "The data is corrupted."}

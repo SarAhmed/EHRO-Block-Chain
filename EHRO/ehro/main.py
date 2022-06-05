@@ -97,7 +97,7 @@ def prepare_response(signed_data, payload, encrypted_username, encrypted_clinic_
 
 def verify_hash(requested_hash):
     params ={"requested_hash": requested_hash}
-    response = requests.get("http://71.1.1.126:8000/verify_hash",params=params)
+    response = requests.get("http://127.0.0.1:8000/verify_hash",params=params)
     if response.status_code != 200:
         return False
     #TODO Test the response.json() and check that it returns the body of the response

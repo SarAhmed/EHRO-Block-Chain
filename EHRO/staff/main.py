@@ -1,3 +1,5 @@
+import ast
+
 from physician import Physician
 from patient import Patient
 from visit import Visit
@@ -119,8 +121,7 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "71.1.1.126" + ":8000/create_physician", json=request_body)
-    print(response)
+    response = requests.post("http://" + "127.0.0.1" + ":8000/create_physician", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
         print(colored(response_json['msg'],"red"))
@@ -146,9 +147,8 @@ def login():
     username = config['DYNAMIC']['physician_username']
     password = config['DYNAMIC']['physician_password']
     if username != entered_username or password != entered_password :
-        print("The username or password is incorrect ")
+        print(colored("The username or password is incorrect ","red"))
         return False
-    print("You are successfully logged in")
     return True
 
 
@@ -160,7 +160,7 @@ def create_patient():
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "71.1.1.126" + ":8000/create_patient", json=request_body)
+    response = requests.post("http://" + "127.0.0.1" + ":8000/create_patient", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -206,8 +206,8 @@ def add_new_visit():
     request_body = prepare_request(new_visit_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
-    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + clinic_ip + ":8000/create_patient_visit", json=request_body)
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + "127.0.0.1" + ":8000/create_patient_visit", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -220,8 +220,8 @@ def update_visit():
     request_body = prepare_request(current_visit_json)
     config = configparser.ConfigParser()
     config.read("config.ini")
-    clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + clinic_ip + ":8000/update_patient_visit", json=request_body)
+    # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
+    response = requests.post("http://" + "127.0.0.1" + ":8000/update_patient_visit", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -253,15 +253,22 @@ def view_patient_history():
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     request_body = prepare_request(toJSON({"username":username}))
-    response = requests.post("http://" + "71.1.1.126" + ":8000/view_patient_history",json=request_body)
-    response_json = json.loads(response.text)
+    response = requests.post("http://" + "127.0.0.1" + ":8000/view_patient_history",json=request_body)
+    # print(response.json()["payload"])
+    # resp= response.text.replace('/"')
+    # print(response.text)
+    # response_json = ast.literal_eval(response.text)
+    # print(type(response_json))
+    # response_json = json.loads(response.text)
+    response_json = response.json()
+    response_json = json.loads(response_json)
+    # print(type(response_json))
     if response.status_code != 200:
-        print(response_json)
-        # print(colored(response_json['msg'], "red"))
+        print(colored(response_json['msg'], "red"))
         return False
     data = prepare_response(response_json["payload"])
     if not "error" in data:
-        print(data)
+        print(toJSON(data))
 
 
 
@@ -280,8 +287,8 @@ def gui():
             if login():
                 break
         else:
-            print("Please select a valid option.")
-    print("You are successfully logged in.")
+            print(colored("Please select a valid option.","red"))
+    print(colored("You are successfully logged in.","green"))
     print("Please select your desired option: ")
     while True:
         option = input("1. Add new patient\n2. Update patient information \n3. Add visit to an existing patient"
