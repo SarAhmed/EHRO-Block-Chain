@@ -14,6 +14,9 @@ from Cryptodome.Signature import pkcs1_15
 
 import util
 from paths import CLINICS_PATH
+from paths import CLINIC_IP
+from paths import EHRO_IP
+
 
 
 class CreatePhysician:
@@ -41,7 +44,7 @@ class CreatePhysician:
             "physician_public_key": body["public_key"]
         }
         }, indent=4, sort_keys=True, default=str)
-        response = requests.post("http://127.0.0.1:5000" + "/create_physician", json=request_body)
+        response = requests.post(EHRO_IP + "/create_physician", json=request_body)
         response_json = json.loads(response.text)
 
         util.write_ehro_key_in_config(response_json["payload"]["ehro_public_key"])
@@ -148,7 +151,7 @@ async def req_create(req, resp, is_existing_patient, entry_type, description):
         }
     }, indent=4, sort_keys=True, default=str)
 
-    response = requests.post("http://127.0.0.1:5000" + "/block_chain", json=request_body_to_ehro)
+    response = requests.post(EHRO_IP + "/block_chain", json=request_body_to_ehro)
     if not response:
         resp.status = falcon.HTTP_400
         resp.media = {"msg": "The data is corrupted."}
@@ -199,7 +202,7 @@ async def req_update(req, resp, entry_type, description):
         }
     }, indent=4, sort_keys=True, default=str)
 
-    response = requests.post("http://71.1.1.126:5000" + "/block_chain", json=request_body_to_ehro)
+    response = requests.post(EHRO_IP + "/block_chain", json=request_body_to_ehro)
     if not response:
         resp.status = falcon.HTTP_400
         resp.media = {"msg": "The data is corrupted."}

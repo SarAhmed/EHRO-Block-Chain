@@ -11,7 +11,7 @@ from server import init_block_chain
 from block import Block
 from termcolor import colored
 import requests
-from paths import EHRO_PATH, CONFIG_PATH, PHYSICICANS_PATH
+from paths import EHRO_PATH, CONFIG_PATH, PHYSICICANS_PATH, CLINIC_IP
 
 
 # def init_block_chain():
@@ -35,7 +35,7 @@ from paths import EHRO_PATH, CONFIG_PATH, PHYSICICANS_PATH
 #     block_chain_obj.last_index = block_chain['last_index']
 #     block_chain_obj.patient_map = block_chain['patient_map']
 #     return block_chain_obj
-from EHRO.ehro.api import get_physician_data, get_physician_PK, str_to_bytes
+from api import get_physician_data, get_physician_PK, str_to_bytes
 
 
 def toJSON(obj):
@@ -74,34 +74,44 @@ def prepare_response(signed_data, payload, encrypted_username, encrypted_clinic_
     config.read("config.ini")
     ehro_private_key = RSA.import_key(config['STATIC']['EHRO_PRIVATE_KEY'])
     decryptor = PKCS1_OAEP.new(ehro_private_key)
-    symmetric_key = decryptor.decrypt(str_to_bytes(payload['encrypted_symmetric_key']))
-
-    clinic_id, username = get_physician_data(encrypted_clinic_id, encrypted_username, ehro_private_key)
-    print(clinic_id, username)
-
-    cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce = str_to_bytes(payload['nonce']))
-    plaintext = cipher.decrypt(str_to_bytes(payload['encrypted_data']))
+    symmetric_key = None
+    clinic_id = None
+    username = None
+    cipher = None
+    try:
+        symmetric_key = decryptor.decrypt(str_to_bytes(payload['encrypted_symmetric_key']))
+        clinic_id, username = get_physician_data(encrypted_clinic_id, encrypted_username, ehro_private_key)
+    # print(clinic_id, username)
+        cipher = AES.new(symmetric_key, AES.MODE_EAX, nonce = str_to_bytes(payload['nonce']))
+    except(ValueError, TypeError):
+        return False
+    plaintext = None
+    try:
+        plaintext = cipher.decrypt(str_to_bytes(payload['encrypted_data']))
+    except(ValueError, TypeError):
+        # print(colored("Hash is incorrect", 'red'))
+        return False
     # plaintext_bytes = bytes(plaintext,'utf-8')
     hash_obj = SHA3_256.new()
     hash_obj.update(plaintext)
     physician_public_key =  RSA.import_key(get_physician_PK(clinic_id, username))
-    print(physician_public_key)
+    # print(physician_public_key)
     try :
         pkcs1_15.new(physician_public_key).verify(hash_obj, str_to_bytes(signed_data))
         # return json.loads(plaintext.decode('utf-8'))
         # print(type(get_patient_username(plaintext)), get_patient_username(plaintext))
         # print(type(clinic_id), clinic_id)
     except (ValueError,TypeError) :
-        print("not ok")
+        # print("not ok")
         return False
     # print("all is ok")
-    print("Hash is verified")
+    # print("Hash is verified")
     return True
 
 
 def verify_hash(requested_hash):
     request_body ={"requested_hash": requested_hash}
-    response = requests.post("http://127.0.0.1:8000/verify_hash",json=toJSON(request_body))
+    response = requests.post(CLINIC_IP + "/verify_hash",json=toJSON(request_body))
     body = response.json()
     if response.status_code != 200:
         print(colored(body["msg"],"red"))

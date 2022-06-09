@@ -90,4 +90,4 @@ class Block_Chain:
 if __name__ == '__main__':
     dict = {}
     dict[1] = 2
-    print(dict[1])
+    # print(dict[1])

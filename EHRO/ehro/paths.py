@@ -1,3 +1,5 @@
 EHRO_PATH = "ehro_log.json"
 CONFIG_PATH = "config.ini"
 PHYSICICANS_PATH = "physician.json"
+CLINIC_IP = " http://192.168.76.71:8000"
+EHRO_IP = " http://192.168.76.71:5000"

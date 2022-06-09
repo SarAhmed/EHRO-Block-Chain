@@ -75,5 +75,5 @@ class Physician:
 
 if __name__ == '__main__':
     p = Physician('QK7DG7X1VIKUOBOW')
-    print(type(p.private_key))
+    # print(type(p.private_key))
     # print(p.private_key, p.public_key)

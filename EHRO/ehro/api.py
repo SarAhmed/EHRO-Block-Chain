@@ -67,7 +67,7 @@ def prepare_response(block_chain, payload, encrypted_username, encrypted_clinic_
     hash_obj = SHA3_256.new()
     hash_obj.update(plaintext)
     physician_public_key =  RSA.import_key(get_physician_PK(clinic_id, username))
-    print(physician_public_key)
+    # print(physician_public_key)
     try :
         pkcs1_15.new(physician_public_key).verify(hash_obj, str_to_bytes(payload['signed_data']))
         # return json.loads(plaintext.decode('utf-8'))

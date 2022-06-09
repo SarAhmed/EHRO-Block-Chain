@@ -16,6 +16,8 @@ import argparse
 from termcolor import colored
 import configparser
 import json
+from paths import CLINIC_IP
+from paths import EHRO_IP
 
 
 def toJSON(obj):
@@ -121,7 +123,7 @@ def create_physician():
     # }
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     # print(request_body)
-    response = requests.post("http://" + "127.0.0.1" + ":8000/create_physician", json=request_body)
+    response = requests.post(CLINIC_IP + "/create_physician", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code != 200 :
         print(colored(response_json['msg'],"red"))
@@ -160,7 +162,7 @@ def create_patient():
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "127.0.0.1" + ":8000/create_patient", json=request_body)
+    response = requests.post(CLINIC_IP + "/create_patient", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -175,7 +177,7 @@ def update_patient_info():
     config = configparser.ConfigParser()
     config.read("config.ini")
     #clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "71.1.1.126" + ":8000/update_patient", json=request_body)
+    response = requests.post(CLINIC_IP + "/update_patient", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'],'green'))
@@ -207,7 +209,7 @@ def add_new_visit():
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "127.0.0.1" + ":8000/create_patient_visit", json=request_body)
+    response = requests.post(CLINIC_IP + "/create_patient_visit", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -221,7 +223,7 @@ def update_visit():
     config = configparser.ConfigParser()
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
-    response = requests.post("http://" + "127.0.0.1" + ":8000/update_patient_visit", json=request_body)
+    response = requests.post(CLINIC_IP + "/update_patient_visit", json=request_body)
     response_json = json.loads(response.text)
     if response.status_code == 200:
         print(colored(response_json['msg'], 'green'))
@@ -253,7 +255,7 @@ def view_patient_history():
     config.read("config.ini")
     # clinic_ip = socket.gethostbyname(config["STATIC"]["CLINIC_ID"])
     request_body = prepare_request(toJSON({"username":username}))
-    response = requests.post("http://" + "127.0.0.1" + ":8000/view_patient_history",json=request_body)
+    response = requests.post(CLINIC_IP + "/view_patient_history",json=request_body)
     # print(response.json()["payload"])
     # resp= response.text.replace('/"')
     # print(response.text)
